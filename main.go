@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
@@ -71,23 +72,34 @@ func processFiles(f string) []string {
 			log.Fatal(err)
 		}
 
+		var filename string
 		for _, file := range files {
-			name := file.Name()
-			parsedFiles = append(parsedFiles, name)
+			filename = file.Name()
 
+			jsonFile := isJSONFile(filename)
+			if jsonFile == false || err != nil {
+				continue
+			}
+
+			parsedFiles = append(parsedFiles, filename)
 		}
 		fmt.Println("Parsed Files: ", parsedFiles)
 
 	} else {
-		//fmt.Println("Passed argument is a file: ", f)
 		parsedFiles = append(parsedFiles, f)
-		//fmt.Println("Parsed File: ", parsedFiles)
-		//fmt.Printf("parsedFile is type: %T \n", f)
 	}
 	return parsedFiles
 }
 
-// IsDirectory comment here
+// Returns path/filename if file has json extension
+func isJSONFile(file string) bool {
+	if filepath.Ext(file) == ".json" {
+		return true
+	}
+	return false
+}
+
+// IsDirectory checks passed in argument to see if it is a directory
 func IsDirectory(path string) (bool, error) {
 	fileInfo, err := os.Stat(path)
 	if err != nil {
@@ -96,29 +108,13 @@ func IsDirectory(path string) (bool, error) {
 	return fileInfo.IsDir(), err
 }
 
-// NOTES:  Using os.Stat(f) we can leverage the functions IsDir to see if f is
-//         a directory, OR use IsRegular to see if f is a file.
-//           - if fi.Mode().IsDir()
-//           - if fi.Mode().IsRegular()
-
-// Usefull blog:  https://flaviocopes.com/go-list-files/
-
-// FileExists reports whether the named file exists as a boolean
-func FileExists(name string) bool {
-	if fi, err := os.Stat(name); err == nil {
-		if fi.Mode().IsRegular() {
-			return true
-		}
-	}
-	return false
-}
-
-// DirExists reports whether the dir exists as a boolean
-func DirExists(name string) bool {
-	if fi, err := os.Stat(name); err == nil {
-		if fi.Mode().IsDir() {
-			return true
-		}
-	}
-	return false
-}
+// EXAMPLE:
+// // Open our jsonFile
+// jsonFile, err := os.Open("users.json")
+// // if we os.Open returns an error then handle it
+// if err != nil {
+// 	fmt.Println(err)
+// }
+// fmt.Println("Successfully Opened users.json")
+// // defer the closing of our jsonFile so that we can parse it later on
+// defer jsonFile.Close()
