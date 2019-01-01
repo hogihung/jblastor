@@ -87,23 +87,6 @@ func processFiles(f string) []string {
 	return parsedFiles
 }
 
-// func processFile(f string) {
-// 	if *debug {
-// 		fmt.Println("Debug: processing file: ", f)
-// 		fmt.Println("Debug: FileExists?", FileExists(f))
-// 		fmt.Println("Debug: DirExists?", DirExists(f))
-// 	}
-
-// 	isDir, err := IsDirectory(f)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-
-// 	if *debug {
-// 		fmt.Println("Is this a directory? (IsDirectory) ", isDir)
-// 	}
-// }
-
 // IsDirectory comment here
 func IsDirectory(path string) (bool, error) {
 	fileInfo, err := os.Stat(path)
