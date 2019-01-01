@@ -31,9 +31,11 @@ func main() {
 	fmt.Printf("Randomize Count is: %v \n", *randCount)
 	fmt.Printf("Following keys will have randomized values: %s \n", *keys)
 
-	parseKeys(*keys)
+	parsedKeys := parseKeys(*keys)
 	parseFiles(*files)
 	slurpDir(*files)
+
+	fmt.Printf("Will randomize the values for the keys %v if they exist.", parsedKeys)
 }
 
 // Take value from 'files' to build a list of files to be parsed
@@ -43,15 +45,21 @@ func main() {
 //
 //
 
-func parseKeys(k string) {
+func parseKeys(k string) []string {
 	fmt.Println("Debug: the following was passed in to parseKeys: ", k)
 	xs := strings.Split(k, ",")
+	fmt.Println("Size of xs: ", len(xs))
 
 	// Iterate over each supplied key and randomize the value for supplied key
 	// in the target file.
+	parsedKeys := make([]string, len(xs))
 	for _, value := range xs {
-		fmt.Println(value)
+		//fmt.Println("Original value: ", value)
+		//fmt.Println("Downcase version of value: ", strings.ToLower(value))
+		parsedKeys = append(parsedKeys, strings.ToLower(value))
 	}
+	fmt.Println("Parsed Keys:", parsedKeys)
+	return parsedKeys
 }
 
 func parseFiles(f string) {
