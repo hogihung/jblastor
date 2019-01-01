@@ -7,8 +7,6 @@ import (
 	"os"
 	"strings"
 
-	//"os"
-
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -26,66 +24,85 @@ func main() {
 	kingpin.Version("0.0.1")
 	kingpin.CommandLine.Help = "Example: jblastor --files /usr/local/myfile.json --endpoint 'http://localhost:7888/save' --randomize --keys 'hostname,name,mc_cfg'"
 	kingpin.Parse()
-	fmt.Printf("Would parse file(s): %v to endpoint %s, with timeout %s \n", *files, *endpoint, *timeout)
-	fmt.Printf("Randomize is set to: %v \n", *randomize)
-	fmt.Printf("Randomize Count is: %v \n", *randCount)
-	fmt.Printf("Following keys will have randomized values: %s \n", *keys)
-
 	parsedKeys := parseKeys(*keys)
-	parseFiles(*files)
-	slurpDir(*files)
+	processedFiles := processFiles(*files)
 
-	fmt.Printf("Will randomize the values for the keys %v if they exist.", parsedKeys)
+	if *debug {
+		fmt.Printf("Debug: will parse file(s): %v \n", *files)
+		fmt.Printf("Debug: will perform POST request to: %v with a timeout of: %v \n", *endpoint, *timeout)
+		fmt.Printf("Debug: randomize is set to: %v \n", *randomize)
+		fmt.Printf("Debug: randomize Count is: %v \n", *randCount)
+		fmt.Printf("Debug: following keys will have randomized values: %s \n", parsedKeys)
+		fmt.Println("Debug: following files were passed in: ", processedFiles)
+	}
 }
 
-// Take value from 'files' to build a list of files to be parsed
-//
 // If randomize is true, validate we have 'keys' -> parse the provided string
 // of keys to see which keys we need to randomize for each file provided
-//
-//
-
 func parseKeys(k string) []string {
-	fmt.Println("Debug: the following was passed in to parseKeys: ", k)
 	xs := strings.Split(k, ",")
-	fmt.Println("Size of xs: ", len(xs))
 
-	// Iterate over each supplied key and randomize the value for supplied key
-	// in the target file.
-	parsedKeys := make([]string, len(xs))
+	parsedKeys := make([]string, 0)
 	for _, value := range xs {
-		//fmt.Println("Original value: ", value)
-		//fmt.Println("Downcase version of value: ", strings.ToLower(value))
 		parsedKeys = append(parsedKeys, strings.ToLower(value))
 	}
-	fmt.Println("Parsed Keys:", parsedKeys)
 	return parsedKeys
 }
 
-func parseFiles(f string) {
-	fmt.Println("Debug: the following was passed in to parseFiles: ", f)
+func processFiles(f string) []string {
+	parsedFiles := make([]string, 0)
 
-	// if f is a directory, iterate through all JSON (*.json) files
-	// for _, value := range f {
-	//  	processFile(f)
-	// }
+	// TODO: Need to only gather files with extension of json (*.json)
+	if *debug {
+		fmt.Println("Debug: the following was passed in to parseFiles: ", f)
+		fmt.Printf("Debug: the type of passed in argument is: %T \n", f)
+	}
 
-	//
-	// if f is a file, process that file
-	processFile(f)
-}
-
-func processFile(f string) {
-	fmt.Println("Debug: processing file: ", f)
-
-	isDir, err := IsDirectory(f)
+	directory, err := IsDirectory(f)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println("Is this a directory? (IsDirectory) ", isDir)
-	fmt.Println("FileExists?", FileExists(f))
-	fmt.Println("DirExists?", DirExists(f))
+
+	if directory {
+		fmt.Println("Passed argument is a directory: ", f)
+
+		files, err := ioutil.ReadDir(f)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, file := range files {
+			name := file.Name()
+			parsedFiles = append(parsedFiles, name)
+
+		}
+		fmt.Println("Parsed Files: ", parsedFiles)
+
+	} else {
+		//fmt.Println("Passed argument is a file: ", f)
+		parsedFiles = append(parsedFiles, f)
+		//fmt.Println("Parsed File: ", parsedFiles)
+		//fmt.Printf("parsedFile is type: %T \n", f)
+	}
+	return parsedFiles
 }
+
+// func processFile(f string) {
+// 	if *debug {
+// 		fmt.Println("Debug: processing file: ", f)
+// 		fmt.Println("Debug: FileExists?", FileExists(f))
+// 		fmt.Println("Debug: DirExists?", DirExists(f))
+// 	}
+
+// 	isDir, err := IsDirectory(f)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+
+// 	if *debug {
+// 		fmt.Println("Is this a directory? (IsDirectory) ", isDir)
+// 	}
+// }
 
 // IsDirectory comment here
 func IsDirectory(path string) (bool, error) {
@@ -121,16 +138,4 @@ func DirExists(name string) bool {
 		}
 	}
 	return false
-}
-
-// trying something - works pretty good!
-func slurpDir(d string) {
-	files, err := ioutil.ReadDir(d)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, file := range files {
-		fmt.Println(file.Name())
-	}
 }
