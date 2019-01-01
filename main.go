@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -28,23 +29,31 @@ func main() {
 	parsedKeys := parseKeys(*keys)
 	processedFiles := processFiles(*files)
 
+	prepJSONFile(processedFiles)
+
 	if *debug {
 		fmt.Printf("Debug: will parse file(s): %v \n", *files)
 		fmt.Printf("Debug: will perform POST request to: %v with a timeout of: %v \n", *endpoint, *timeout)
 		fmt.Printf("Debug: randomize is set to: %v \n", *randomize)
 		fmt.Printf("Debug: randomize Count is: %v \n", *randCount)
 		fmt.Printf("Debug: following keys will have randomized values: %s \n", parsedKeys)
-		fmt.Println("Debug: following files were passed in: ", processedFiles)
+		fmt.Println("Debug: following files will be processed: ", processedFiles)
 	}
 }
 
+// NOTES:  Need to capture the directory/full path name when slurping the files
+//         in a directory, not just the filenames.
+
 // If randomize is true, validate we have 'keys' -> parse the provided string
 // of keys to see which keys we need to randomize for each file provided
+//
+// At this time we will only support randomizing the value of top level keys.
+// For example, {"hostname:" "somefqdn-here"} OR {"podname:" "some-pod-name-here"}
 func parseKeys(k string) []string {
-	xs := strings.Split(k, ",")
+	keyString := strings.Split(k, ",")
 
 	parsedKeys := make([]string, 0)
-	for _, value := range xs {
+	for _, value := range keyString {
 		parsedKeys = append(parsedKeys, strings.ToLower(value))
 	}
 	return parsedKeys
@@ -52,12 +61,6 @@ func parseKeys(k string) []string {
 
 func processFiles(f string) []string {
 	parsedFiles := make([]string, 0)
-
-	// TODO: Need to only gather files with extension of json (*.json)
-	if *debug {
-		fmt.Println("Debug: the following was passed in to parseFiles: ", f)
-		fmt.Printf("Debug: the type of passed in argument is: %T \n", f)
-	}
 
 	directory, err := IsDirectory(f)
 	if err != nil {
@@ -81,6 +84,7 @@ func processFiles(f string) []string {
 				continue
 			}
 
+			filename = f + filename
 			parsedFiles = append(parsedFiles, filename)
 		}
 		fmt.Println("Parsed Files: ", parsedFiles)
@@ -108,13 +112,36 @@ func IsDirectory(path string) (bool, error) {
 	return fileInfo.IsDir(), err
 }
 
-// EXAMPLE:
-// // Open our jsonFile
-// jsonFile, err := os.Open("users.json")
-// // if we os.Open returns an error then handle it
-// if err != nil {
-// 	fmt.Println(err)
-// }
-// fmt.Println("Successfully Opened users.json")
-// // defer the closing of our jsonFile so that we can parse it later on
-// defer jsonFile.Close()
+func readJSONFile(file string) {
+	jsonFile, err := os.Open(file)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer jsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	var result map[string]interface{}
+	json.Unmarshal([]byte(byteValue), &result)
+
+	// TRIAL - substitute a key/value **NOTE: THIS WORKS!!**
+	//result["hostname"] = "somerandom-host"
+
+	fmt.Println("Processed JSON for host: ", result["hostname"])
+	//fmt.Println("Processed JSON asset.properties: ", result["asset.properties"])
+	//fmt.Println("Processed JSON mc_cfg: ", result["mc_cfg"])
+
+	// Pretty print the JSON
+	if *debug {
+		newResult, _ := json.MarshalIndent(result, "", "\t")
+		if newResult != nil {
+			fmt.Println(string(newResult))
+		}
+	}
+}
+
+func prepJSONFile(xf []string) {
+	for _, file := range xf {
+		readJSONFile(file)
+	}
+}
