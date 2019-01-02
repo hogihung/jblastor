@@ -24,13 +24,12 @@ var (
 
 func main() {
 	kingpin.Version("0.0.1")
-	kingpin.CommandLine.Help = "Example: jblastor --files /usr/local/myfile.json --endpoint 'http://localhost:7888/save' --randomize --keys 'hostname,name,mc_cfg'"
+	kingpin.CommandLine.Help = "Example: jblastor --files /usr/local/myfile.json --endpoint 'http://localhost:8088/save' --randomize --keys 'hostname,name,mc_cfg'"
 	kingpin.Parse()
 	parsedKeys := parseKeys(*keys)
 	processedFiles := processFiles(*files)
 
-	prepJSONFile(processedFiles)
-
+	// May remove these once all things are settled
 	if *debug {
 		fmt.Printf("Debug: will parse file(s): %v \n", *files)
 		fmt.Printf("Debug: will perform POST request to: %v with a timeout of: %v \n", *endpoint, *timeout)
@@ -39,11 +38,20 @@ func main() {
 		fmt.Printf("Debug: following keys will have randomized values: %s \n", parsedKeys)
 		fmt.Println("Debug: following files will be processed: ", processedFiles)
 	}
+
+	// TEMP: to help with figuring things out.
+	prepJSONFile(processedFiles)
+
+	// Next Steps:
+	//  - pass processedFiles to function
+	//  - that function will take each file, randomize key values if needed and
+	//  - concurrenty perform a POST to our target *endpoint
+	//
+	// First, focus on doing a POST of each file, vanilla, to the endpoint.
+	// Once that is working properly, then look to add randomization and finally
+	// add concurrency.
 }
 
-// If randomize is true, validate we have 'keys' -> parse the provided string
-// of keys to see which keys we need to randomize for each file provided
-//
 // At this time we will only support randomizing the value of top level keys.
 // For example, {"hostname:" "somefqdn-here"} OR {"podname:" "some-pod-name-here"}
 func parseKeys(k string) []string {
@@ -65,8 +73,6 @@ func processFiles(f string) []string {
 	}
 
 	if directory {
-		fmt.Println("Passed argument is a directory: ", f)
-
 		files, err := ioutil.ReadDir(f)
 		if err != nil {
 			log.Fatal(err)
@@ -81,8 +87,6 @@ func processFiles(f string) []string {
 			}
 			parsedFiles = append(parsedFiles, filename)
 		}
-		fmt.Println("Parsed Files: ", parsedFiles)
-
 	} else {
 		parsedFiles = append(parsedFiles, f)
 	}
@@ -134,19 +138,20 @@ func readJSONFile(file string) {
 	// TRIAL - substitute a key/value **NOTE: THIS WORKS!!**
 	//result["hostname"] = "somerandom-host"
 
-	fmt.Println("Processed JSON for host: ", result["hostname"])
+	//fmt.Println("Processed JSON for host: ", result["hostname"])
 	//fmt.Println("Processed JSON asset.properties: ", result["asset.properties"])
 	//fmt.Println("Processed JSON mc_cfg: ", result["mc_cfg"])
 
 	// Pretty print the JSON
-	if *debug {
-		newResult, _ := json.MarshalIndent(result, "", "\t")
-		if newResult != nil {
-			fmt.Println(string(newResult))
-		}
-	}
+	// if *debug {
+	// 	newResult, _ := json.MarshalIndent(result, "", "\t")
+	// 	if newResult != nil {
+	// 		fmt.Println(string(newResult))
+	// 	}
+	// }
 }
 
+// TODO: need to build up/off of this.
 func prepJSONFile(xf []string) {
 	for _, file := range xf {
 		readJSONFile(file)
