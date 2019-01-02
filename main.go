@@ -41,9 +41,6 @@ func main() {
 	}
 }
 
-// NOTES:  Need to capture the directory/full path name when slurping the files
-//         in a directory, not just the filenames.
-
 // If randomize is true, validate we have 'keys' -> parse the provided string
 // of keys to see which keys we need to randomize for each file provided
 //
@@ -62,7 +59,7 @@ func parseKeys(k string) []string {
 func processFiles(f string) []string {
 	parsedFiles := make([]string, 0)
 
-	directory, err := IsDirectory(f)
+	directory, err := isDirectory(f)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -77,14 +74,11 @@ func processFiles(f string) []string {
 
 		var filename string
 		for _, file := range files {
-			filename = file.Name()
-
+			filename = f + file.Name()
 			jsonFile := isJSONFile(filename)
 			if jsonFile == false || err != nil {
 				continue
 			}
-
-			filename = f + filename
 			parsedFiles = append(parsedFiles, filename)
 		}
 		fmt.Println("Parsed Files: ", parsedFiles)
@@ -95,16 +89,29 @@ func processFiles(f string) []string {
 	return parsedFiles
 }
 
-// Returns path/filename if file has json extension
 func isJSONFile(file string) bool {
-	if filepath.Ext(file) == ".json" {
+	if (filepath.Ext(file) == ".json") && isValidJSON(file) {
 		return true
 	}
 	return false
 }
 
-// IsDirectory checks passed in argument to see if it is a directory
-func IsDirectory(path string) (bool, error) {
+func isValidJSON(file string) bool {
+	jsonFile, err := os.Open(file)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	defer jsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+	if json.Valid(byteValue) {
+		return true
+	}
+	return false
+}
+
+func isDirectory(path string) (bool, error) {
 	fileInfo, err := os.Stat(path)
 	if err != nil {
 		return false, err
