@@ -18,14 +18,12 @@ var (
 	timeout  = kingpin.Flag("timeout", "Timeout waiting for POST request.").Default("15s").Short('t').Duration()
 	files    = kingpin.Flag("files", "Path to file or directory of file(s) to parse and POST.").Short('f').Required().ExistingFileOrDir()
 	endpoint = kingpin.Flag("endpoint", "REST API endpoint to send request to.").Short('e').Required().String()
-	apiUser  = "perfapi"
-	apiPass  = "f6cd3459f9a39c9784b3e328f05be0f7"
-
-	//apiUser = kingpin.Flag("apiuser, "API User account permitted to do POST requests.").Short('u').String()
-	//apiPass = kingpin.Flag("apipass, "API Passwor for user account.").Short('p').String()
+	apiUser  = kingpin.Flag("apiuser", "API User account permitted to do POST requests.").Short('u').String()
+	apiPass  = kingpin.Flag("apipass", "API Passwor for user account.").Short('p').String()
 )
 
-// Define a struct for handling HTTP Responses
+// HTTPResponse is a struct for handling the responses we will be getting from
+// the POST requests.
 type HTTPResponse struct {
 	status string
 	body   []byte
@@ -57,6 +55,8 @@ func main() {
 	}
 }
 
+// DoHTTPPost function takes a path to a JSON formatted file, extracts the JSON
+// data and then does a POST request to the targetted endpoint, concurrently.
 func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 	jsonFile, err := os.Open(file)
 	if err != nil {
