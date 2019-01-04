@@ -69,7 +69,7 @@ func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 	req, err := http.NewRequest("POST", *endpoint, bytes.NewBuffer(jsonValue))
 	req.Header.Set("X-Custom-Header", "myvalue")
 	req.Header.Set("Content-Type", "application/json")
-	req.SetBasicAuth(apiUser, apiPass)
+	req.SetBasicAuth(*apiUser, *apiPass)
 
 	client := &http.Client{}
 	httpResponse, err := client.Do(req)
