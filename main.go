@@ -45,13 +45,14 @@ func main() {
 	}
 
 	for _, file := range processedFiles {
-		//For each URL call the DOHTTPPost function (notice the go keyword)
+		// For each URL call the DOHTTPPost function (concurrency)
 		go DoHTTPPost(file, ch)
 	}
 
 	for range processedFiles {
 		// Use the response (<-ch).body
 		fmt.Println((<-ch).status)
+		fmt.Println(string((<-ch).body))
 	}
 }
 
