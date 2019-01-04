@@ -74,8 +74,9 @@ func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 	client := &http.Client{}
 	httpResponse, err := client.Do(req)
 	if err != nil {
-		//panic(err)
+		panic(err)
 		//fmt.Printf("Error encountered with file %v.  Error is: %v. \n", file, err)
+		//fmt.Println("Error with file: ", file)
 	}
 	defer httpResponse.Body.Close()
 
@@ -147,58 +148,3 @@ func isDirectory(path string) (bool, error) {
 	}
 	return fileInfo.IsDir(), err
 }
-
-// ========================================================
-// ========================================================
-// ========================================================
-// func readJSONFile(file string) {
-// 	jsonFile, err := os.Open(file)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	defer jsonFile.Close()
-
-// 	byteValue, _ := ioutil.ReadAll(jsonFile)
-
-// 	var result map[string]interface{}
-// 	json.Unmarshal([]byte(byteValue), &result)
-
-// 	// --------------------------------------------------------------
-// 	// TRIAL::
-// 	// --------------------------------------------------------------
-// 	start := time.Now()
-// 	req, err := http.NewRequest("POST", *endpoint, bytes.NewBuffer(byteValue))
-// 	req.Header.Set("X-Custom-Header", "myvalue")
-// 	req.Header.Set("Content-Type", "application/json")
-// 	req.SetBasicAuth(apiUser, apiPass)
-
-// 	client := &http.Client{}
-// 	resp, err := client.Do(req)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer resp.Body.Close()
-
-// 	secs := time.Since(start).Seconds()
-// 	fmt.Println("response Status:", resp.Status)
-// 	fmt.Println("response Headers:", resp.Header)
-// 	body, _ := ioutil.ReadAll(resp.Body)
-// 	fmt.Println("response Body:", string(body))
-// 	fmt.Printf("%.2f seconds elapsed", secs)
-// 	// --------------------------------------------------------------
-
-// 	// Pretty print the JSON
-// 	if *debug {
-// 		ppJSON, _ := json.MarshalIndent(result, "", "\t")
-// 		if ppJSON != nil {
-// 			fmt.Println(string(ppJSON))
-// 		}
-// 	}
-// }
-
-// // TODO: need to build up/off of this.
-// func postJSONFiles(xf []string) {
-// 	for _, file := range xf {
-// 		readJSONFile(file)
-// 	}
-// }
