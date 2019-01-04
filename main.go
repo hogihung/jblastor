@@ -26,6 +26,15 @@ var (
 	//apiPass = kingpin.Flag("apipass, "API Passwor for user account.").Short('p').String()
 )
 
+// Define a struct for handling HTTP Responses
+type HTTPResponse struct {
+	status string
+	body   []byte
+}
+
+// **NEW** **NEW** 01/04/2019 @ 04:22pm est
+var ch chan HTTPResponse = make(chan HTTPResponse)
+
 func main() {
 	kingpin.Version("0.0.1")
 	kingpin.CommandLine.Help = "Example: jblastor --files /usr/local/myfile.json --endpoint 'http://localhost:8088/save' "
@@ -40,12 +49,17 @@ func main() {
 	}
 
 	// TEMP: to help with figuring things out.
-	postJSONFiles(processedFiles)
+	// postJSONFiles(processedFiles)
 
-	// ch := make(chan string)
-	// for _,file := range processedFiles{
-	// 	go MakeRequest(file, ch)
-	// }
+	for _, file := range processedFiles {
+		//For each URL call the DOHTTPPost function (notice the go keyword)
+		go DoHTTPPost(file, ch)
+	}
+
+	for range processedFiles {
+		// Use the response (<-ch).body
+		fmt.Println((<-ch).status)
+	}
 
 	// Next Steps:
 	//  - pass processedFiles to function
@@ -55,25 +69,31 @@ func main() {
 	// Once that is working properly, then look to add concurrency.
 }
 
-// func postJSON(jsonData []byte) {
-// 	fmt.Printf("DEBUG: url we will post JSON to: %v with a timeout of: %v \n", *endpoint, *timeout)
+// DoHTTPPost
+func DoHTTPPost(file string, ch chan<- HTTPResponse) {
+	jsonFile, err := os.Open(file)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer jsonFile.Close()
 
-// 	req, err := http.NewRequest("POST", *endpoint, bytes.NewBuffer(jsonData))
-// 	req.Header.Set("X-Custom-Header", "myvalue")
-// 	req.Header.Set("Content-Type", "application/json")
+	jsonValue, _ := ioutil.ReadAll(jsonFile)
 
-// 	client := &http.Client{}
-// 	resp, err := client.Do(req)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer resp.Body.Close()
+	req, err := http.NewRequest("POST", *endpoint, bytes.NewBuffer(jsonValue))
+	req.Header.Set("X-Custom-Header", "myvalue")
+	req.Header.Set("Content-Type", "application/json")
+	req.SetBasicAuth(apiUser, apiPass)
 
-// 	fmt.Println("response Status:", resp.Status)
-// 	fmt.Println("response Headers:", resp.Header)
-// 	body, _ := ioutil.ReadAll(resp.Body)
-// 	fmt.Println("response Body:", string(body))
-// }
+	client := &http.Client{}
+	httpResponse, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer httpResponse.Body.Close()
+
+	httpBody, _ := ioutil.ReadAll(httpResponse.Body)
+	ch <- HTTPResponse{httpResponse.Status, httpBody}
+}
 
 func processFiles(f string) []string {
 	parsedFiles := make([]string, 0)
@@ -155,8 +175,6 @@ func readJSONFile(file string) {
 	// --------------------------------------------------------------
 	// TRIAL::
 	// --------------------------------------------------------------
-	// ch <- fmt.Sprintf("%.2f elapsed with response length: %d %s", secs, len(body), url)
-
 	start := time.Now()
 	req, err := http.NewRequest("POST", *endpoint, bytes.NewBuffer(byteValue))
 	req.Header.Set("X-Custom-Header", "myvalue")
