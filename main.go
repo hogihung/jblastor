@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"time"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
@@ -32,7 +31,6 @@ type HTTPResponse struct {
 	body   []byte
 }
 
-// **NEW** **NEW** 01/04/2019 @ 04:22pm est
 var ch chan HTTPResponse = make(chan HTTPResponse)
 
 func main() {
@@ -48,9 +46,6 @@ func main() {
 		fmt.Println("Debug: following files will be processed: ", processedFiles)
 	}
 
-	// TEMP: to help with figuring things out.
-	// postJSONFiles(processedFiles)
-
 	for _, file := range processedFiles {
 		//For each URL call the DOHTTPPost function (notice the go keyword)
 		go DoHTTPPost(file, ch)
@@ -60,16 +55,8 @@ func main() {
 		// Use the response (<-ch).body
 		fmt.Println((<-ch).status)
 	}
-
-	// Next Steps:
-	//  - pass processedFiles to function
-	//  - concurrenty perform a POST to our target *endpoint
-	//
-	// First, focus on doing a POST of each file, vanilla, to the endpoint.
-	// Once that is working properly, then look to add concurrency.
 }
 
-// DoHTTPPost
 func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 	jsonFile, err := os.Open(file)
 	if err != nil {
@@ -87,7 +74,8 @@ func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 	client := &http.Client{}
 	httpResponse, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		//panic(err)
+		//fmt.Printf("Error encountered with file %v.  Error is: %v. \n", file, err)
 	}
 	defer httpResponse.Body.Close()
 
@@ -160,54 +148,57 @@ func isDirectory(path string) (bool, error) {
 	return fileInfo.IsDir(), err
 }
 
-func readJSONFile(file string) {
-	jsonFile, err := os.Open(file)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer jsonFile.Close()
+// ========================================================
+// ========================================================
+// ========================================================
+// func readJSONFile(file string) {
+// 	jsonFile, err := os.Open(file)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// 	defer jsonFile.Close()
 
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+// 	byteValue, _ := ioutil.ReadAll(jsonFile)
 
-	var result map[string]interface{}
-	json.Unmarshal([]byte(byteValue), &result)
+// 	var result map[string]interface{}
+// 	json.Unmarshal([]byte(byteValue), &result)
 
-	// --------------------------------------------------------------
-	// TRIAL::
-	// --------------------------------------------------------------
-	start := time.Now()
-	req, err := http.NewRequest("POST", *endpoint, bytes.NewBuffer(byteValue))
-	req.Header.Set("X-Custom-Header", "myvalue")
-	req.Header.Set("Content-Type", "application/json")
-	req.SetBasicAuth(apiUser, apiPass)
+// 	// --------------------------------------------------------------
+// 	// TRIAL::
+// 	// --------------------------------------------------------------
+// 	start := time.Now()
+// 	req, err := http.NewRequest("POST", *endpoint, bytes.NewBuffer(byteValue))
+// 	req.Header.Set("X-Custom-Header", "myvalue")
+// 	req.Header.Set("Content-Type", "application/json")
+// 	req.SetBasicAuth(apiUser, apiPass)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
+// 	client := &http.Client{}
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	defer resp.Body.Close()
 
-	secs := time.Since(start).Seconds()
-	fmt.Println("response Status:", resp.Status)
-	fmt.Println("response Headers:", resp.Header)
-	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(body))
-	fmt.Printf("%.2f seconds elapsed", secs)
-	// --------------------------------------------------------------
+// 	secs := time.Since(start).Seconds()
+// 	fmt.Println("response Status:", resp.Status)
+// 	fmt.Println("response Headers:", resp.Header)
+// 	body, _ := ioutil.ReadAll(resp.Body)
+// 	fmt.Println("response Body:", string(body))
+// 	fmt.Printf("%.2f seconds elapsed", secs)
+// 	// --------------------------------------------------------------
 
-	// Pretty print the JSON
-	if *debug {
-		ppJSON, _ := json.MarshalIndent(result, "", "\t")
-		if ppJSON != nil {
-			fmt.Println(string(ppJSON))
-		}
-	}
-}
+// 	// Pretty print the JSON
+// 	if *debug {
+// 		ppJSON, _ := json.MarshalIndent(result, "", "\t")
+// 		if ppJSON != nil {
+// 			fmt.Println(string(ppJSON))
+// 		}
+// 	}
+// }
 
-// TODO: need to build up/off of this.
-func postJSONFiles(xf []string) {
-	for _, file := range xf {
-		readJSONFile(file)
-	}
-}
+// // TODO: need to build up/off of this.
+// func postJSONFiles(xf []string) {
+// 	for _, file := range xf {
+// 		readJSONFile(file)
+// 	}
+// }
