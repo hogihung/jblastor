@@ -29,7 +29,7 @@ type HTTPResponse struct {
 	body   []byte
 }
 
-var ch chan HTTPResponse = make(chan HTTPResponse)
+var ch = make(chan HTTPResponse)
 
 func main() {
 	kingpin.Version("0.0.1")
@@ -51,8 +51,11 @@ func main() {
 
 	for range processedFiles {
 		// Use the response (<-ch).body
-		fmt.Println((<-ch).status)
+		//fmt.Println((<-ch).status)
 		fmt.Println(string((<-ch).body))
+
+		// does not work, first request processes then locks/blocks
+		//fmt.Printf("%v : %v", string((<-ch).status), string((<-ch).body))
 	}
 }
 
