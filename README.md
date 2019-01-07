@@ -7,23 +7,24 @@ files then performing a POST request to the target REST API endpoint.
 ## USAGE
 
 ```
+➜  jblastor git:(master) ✗ ./jblastor
+jblastor: error: required flag --files not provided, try --help
+➜  jblastor git:(master) ✗
+
 ➜  jblastor git:(master) ✗ ./jblastor --help
-usage: jblastor --files=FILES [<flags>] <endpoint> [<random>]
+usage: jblastor --files=FILES --endpoint=ENDPOINT [<flags>]
+
+Example: jblastor --files /usr/local/myfile.json --endpoint 'http://localhost:8088/save'
 
 Flags:
-      --help         Show context-sensitive help (also try --help-long and
-                     --help-man).
-      --debug        Enable debug mode.
-  -t, --timeout=5s   Timeout waiting for POST request.
-      --files=FILES  Path to file or directory of file(s) to parse and POST.
-      --randomize    Enable randomization of data in JSON files.
-      --version      Show application version.
+      --help               Show context-sensitive help (also try --help-long and --help-man).
+      --debug              Enable debug mode.
+  -t, --timeout=15s        Timeout waiting for POST request.
+  -f, --files=FILES        Path to file or directory of file(s) to parse and POST.
+  -e, --endpoint=ENDPOINT  REST API endpoint to send request to.
+  -u, --apiuser=APIUSER    API User account permitted to do POST requests.
+  -p, --apipass=APIPASS    API Passwor for user account.
+      --version            Show application version.
 
-Args:
-  <endpoint>  REST API endpoint to send request to.
-  [<random>]  Number of random POST requests, per found file, to send [defaults to
-              name].
-
-➜  jblastor git:(master) ✗ 
-
+➜  jblastor git:(master) ✗
 ```
