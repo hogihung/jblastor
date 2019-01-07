@@ -71,27 +71,29 @@ func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 	jsonValue, _ := ioutil.ReadAll(jsonFile)
 
 	req, err := http.NewRequest("POST", *endpoint, bytes.NewBuffer(jsonValue))
-	req.Header.Set("X-Custom-Header", "myvalue")
+	req.Header.Set("X-Custom-Header", "JBLASTOR")
 	req.Header.Set("Content-Type", "application/json")
 	req.SetBasicAuth(*apiUser, *apiPass)
 
 	client := &http.Client{}
 	httpResponse, err := client.Do(req)
 
-	defer func() {
-		if r := recover(); r != nil {
-			log.Println("Error with request: ", req)
-			log.Println("Problem encountered with file: ", file)
-			log.Println("Recovery: ", r)
-		}
-	}()
+	// defer func() {
+	// 	if r := recover(); r != nil {
+	// 		log.Println("Error with request: ", req)
+	// 		log.Println("Problem encountered with file: ", file)
+	// 		log.Println("Recovery: ", r)
+	// 		//err = r.(error)
+	// 		//log.Println(err)
+	// 	}
+	// }()
 
-	// if err != nil {
-	// 	panic(err)
-	// 	//fmt.Printf("Error encountered with file %v.  Error is: %v. \n", file, err)
-	// 	//fmt.Println("Error with file: ", file)
-	// }
-
+	if err != nil {
+		//panic(err)
+		//fmt.Printf("Error encountered with file %v.  Error is: %v. \n", file, err)
+		//fmt.Printf("Error with file: %v for request: %v due to error: %v", file, req, err)
+		log.Fatal(err) // might be the way we go, need to test more, worked four times in a row ***
+	}
 	defer httpResponse.Body.Close()
 
 	httpBody, _ := ioutil.ReadAll(httpResponse.Body)
