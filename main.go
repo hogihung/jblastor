@@ -51,8 +51,8 @@ func main() {
 
 	for range processedFiles {
 		// Use the response (<-ch).body
-		//fmt.Println((<-ch).status)
-		fmt.Println(string((<-ch).body))
+		fmt.Println((<-ch).status)
+		//fmt.Println(string((<-ch).body))
 
 		// does not work, first request processes then locks/blocks
 		//fmt.Printf("%v : %v", string((<-ch).status), string((<-ch).body))
@@ -77,11 +77,21 @@ func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 
 	client := &http.Client{}
 	httpResponse, err := client.Do(req)
-	if err != nil {
-		panic(err)
-		//fmt.Printf("Error encountered with file %v.  Error is: %v. \n", file, err)
-		//fmt.Println("Error with file: ", file)
-	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("Error with request: ", req)
+			log.Println("Problem encountered with file: ", file)
+			log.Println("Recovery: ", r)
+		}
+	}()
+
+	// if err != nil {
+	// 	panic(err)
+	// 	//fmt.Printf("Error encountered with file %v.  Error is: %v. \n", file, err)
+	// 	//fmt.Println("Error with file: ", file)
+	// }
+
 	defer httpResponse.Body.Close()
 
 	httpBody, _ := ioutil.ReadAll(httpResponse.Body)
