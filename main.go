@@ -38,7 +38,7 @@ func main() {
 	processedFiles := processFiles(*files)
 
 	// May remove these once all things are settled
-	if *debug {
+	if debug {
 		fmt.Printf("Debug: will parse file(s): %v \n", *files)
 		fmt.Printf("Debug: will perform POST request to: %v with a timeout of: %v \n", *endpoint, *timeout)
 		fmt.Println("Debug: following files will be processed: ", processedFiles)
@@ -64,7 +64,10 @@ func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 	}
 	defer jsonFile.Close()
 
-	jsonValue, _ := ioutil.ReadAll(jsonFile)
+	jsonValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	req, err := http.NewRequest("POST", *endpoint, bytes.NewBuffer(jsonValue))
 	req.Header.Set("X-Custom-Header", "JBLASTOR")
@@ -75,11 +78,16 @@ func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 	httpResponse, err := client.Do(req)
 
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
+		log.Printf("DoHTTPPost#httpResponse: %#v: request: %#v", err, req)
 	}
 	defer httpResponse.Body.Close()
 
 	httpBody, _ := ioutil.ReadAll(httpResponse.Body)
+	if err != nil {
+		//return nil, err
+		log.Printf("DoHTTPPost#httpBody: %#v: request: %#v", err, httpResponse.Body)
+	}
 	ch <- HTTPResponse{httpResponse.Status, httpBody}
 }
 
