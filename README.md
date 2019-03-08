@@ -18,8 +18,6 @@ Example: jblastor --files /usr/local/myfile.json --endpoint 'http://localhost:80
 
 Flags:
       --help               Show context-sensitive help (also try --help-long and --help-man).
-      --debug              Enable debug mode.
-  -t, --timeout=15s        Timeout waiting for POST request.
   -f, --files=FILES        Path to file or directory of file(s) to parse and POST.
   -e, --endpoint=ENDPOINT  REST API endpoint to send request to.
   -u, --apiuser=APIUSER    API User account permitted to do POST requests.
