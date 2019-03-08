@@ -14,8 +14,6 @@ import (
 )
 
 var (
-	debug    = kingpin.Flag("debug", "Enable debug mode.").Bool()
-	timeout  = kingpin.Flag("timeout", "Timeout waiting for POST request.").Default("15s").Short('t').Duration()
 	files    = kingpin.Flag("files", "Path to file or directory of file(s) to parse and POST.").Short('f').Required().ExistingFileOrDir()
 	endpoint = kingpin.Flag("endpoint", "REST API endpoint to send request to.").Short('e').Required().String()
 	apiUser  = kingpin.Flag("apiuser", "API User account permitted to do POST requests.").Short('u').String()
@@ -36,13 +34,6 @@ func main() {
 	kingpin.CommandLine.Help = "Example: jblastor --files /usr/local/myfile.json --endpoint 'http://localhost:8088/save' "
 	kingpin.Parse()
 	processedFiles := processFiles(*files)
-
-	// May remove these once all things are settled
-	if debug {
-		fmt.Printf("Debug: will parse file(s): %v \n", *files)
-		fmt.Printf("Debug: will perform POST request to: %v with a timeout of: %v \n", *endpoint, *timeout)
-		fmt.Println("Debug: following files will be processed: ", processedFiles)
-	}
 
 	for _, file := range processedFiles {
 		// For each URL call the DOHTTPPost function (concurrency)
