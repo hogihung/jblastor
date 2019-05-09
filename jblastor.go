@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
+	logr "github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -35,14 +36,23 @@ func main() {
 	kingpin.Parse()
 	processedFiles := processFiles(*files)
 
+	// playing with LogRus
+	logr.SetFormatter(&logr.JSONFormatter{})
+	logr.SetOutput(os.Stdout)
+	logr.SetLevel(logr.InfoLevel)
+	logr.WithFields(logr.Fields{
+		"animal": "walrus",
+	}).Info("A walrus appears")
+
 	for _, file := range processedFiles {
 		// For each URL call the DOHTTPPost function (concurrency)
 		go DoHTTPPost(file, ch)
 	}
 
 	for range processedFiles {
-		//fmt.Println((<-ch).status)
-		fmt.Println(string((<-ch).body))
+		// Want to use both of these but in a log file.
+		fmt.Println((<-ch).status) // example:  201 Created
+		//fmt.Println(string((<-ch).body))
 	}
 }
 
@@ -51,13 +61,19 @@ func main() {
 func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 	jsonFile, err := os.Open(file)
 	if err != nil {
-		fmt.Println(err)
+		// Change this to log error to file.
+		logr.Warn("DoHTTPPost: Error opening file")
+		//fmt.Println(err)
+		return
 	}
 	defer jsonFile.Close()
 
 	jsonValue, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
-		fmt.Println(err)
+		// Change this to log error to file.
+		logr.Warn("DoHTTPPost: Error reading JSON file.")
+		//fmt.Println(err)
+		return
 	}
 
 	req, err := http.NewRequest("POST", *endpoint, bytes.NewBuffer(jsonValue))
@@ -70,16 +86,20 @@ func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 
 	if err != nil {
 		//log.Fatal(err)
-		log.Printf("DoHTTPPost#httpResponse: %#v: request: %#v", err, req)
-    return
+		// Change this to log error to file or ignore
+		logr.Warn("DoHTTPPost#httpResponse: error making http request")
+		//log.Printf("DoHTTPPost#httpResponse: %#v: request: %#v", err, req)
+		return
 	}
 	defer httpResponse.Body.Close()
 
 	httpBody, _ := ioutil.ReadAll(httpResponse.Body)
 	if err != nil {
 		//return nil, err
-		log.Printf("DoHTTPPost#httpBody: %#v: request: %#v", err, httpResponse.Body)
-    return
+		// Change this to log error to file or ignore
+		logr.Warn("DoHTTPPost#httpBody: error ready response body")
+		//log.Printf("DoHTTPPost#httpBody: %#v: request: %#v", err, httpResponse.Body)
+		return
 	}
 	ch <- HTTPResponse{httpResponse.Status, httpBody}
 }
