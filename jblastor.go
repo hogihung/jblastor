@@ -46,6 +46,8 @@ func main() {
 
 	for _, file := range processedFiles {
 		// For each URL call the DOHTTPPost function (concurrency)
+		// TODO: need to add some throttling.  Seems the speed of requests going to
+		//       the target endpoint is causing a lock up. (05/09/19)
 		go DoHTTPPost(file, ch)
 	}
 
