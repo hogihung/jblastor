@@ -71,6 +71,7 @@ func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 	if err != nil {
 		//log.Fatal(err)
 		log.Printf("DoHTTPPost#httpResponse: %#v: request: %#v", err, req)
+    return
 	}
 	defer httpResponse.Body.Close()
 
@@ -78,6 +79,7 @@ func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 	if err != nil {
 		//return nil, err
 		log.Printf("DoHTTPPost#httpBody: %#v: request: %#v", err, httpResponse.Body)
+    return
 	}
 	ch <- HTTPResponse{httpResponse.Status, httpBody}
 }
