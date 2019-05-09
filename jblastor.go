@@ -40,9 +40,12 @@ func main() {
 	logr.SetFormatter(&logr.JSONFormatter{})
 	logr.SetOutput(os.Stdout)
 	logr.SetLevel(logr.InfoLevel)
-	logr.WithFields(logr.Fields{
-		"animal": "walrus",
-	}).Info("A walrus appears")
+	// logr.WithFields(logr.Fields{
+	// 	"animal": "walrus",
+	// }).Info("A walrus appears")
+
+	fileCount := len(processedFiles)
+	logr.Info("Number of files: ", fileCount)
 
 	for _, file := range processedFiles {
 		// For each URL call the DOHTTPPost function (concurrency)
