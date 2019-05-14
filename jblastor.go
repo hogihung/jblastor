@@ -40,9 +40,6 @@ func main() {
 	logr.SetFormatter(&logr.JSONFormatter{})
 	logr.SetOutput(os.Stdout)
 	logr.SetLevel(logr.InfoLevel)
-	// logr.WithFields(logr.Fields{
-	// 	"animal": "walrus",
-	// }).Info("A walrus appears")
 
 	fileCount := len(processedFiles)
 	logr.Info("Number of files: ", fileCount)
@@ -68,7 +65,6 @@ func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 	if err != nil {
 		// Change this to log error to file.
 		logr.Warn("DoHTTPPost: Error opening file")
-		//fmt.Println(err)
 		return
 	}
 	defer jsonFile.Close()
@@ -77,7 +73,6 @@ func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 	if err != nil {
 		// Change this to log error to file.
 		logr.Warn("DoHTTPPost: Error reading JSON file.")
-		//fmt.Println(err)
 		return
 	}
 
@@ -90,20 +85,16 @@ func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 	httpResponse, err := client.Do(req)
 
 	if err != nil {
-		//log.Fatal(err)
 		// Change this to log error to file or ignore
 		logr.Warn("DoHTTPPost#httpResponse: error making http request")
-		//log.Printf("DoHTTPPost#httpResponse: %#v: request: %#v", err, req)
 		return
 	}
 	defer httpResponse.Body.Close()
 
 	httpBody, _ := ioutil.ReadAll(httpResponse.Body)
 	if err != nil {
-		//return nil, err
 		// Change this to log error to file or ignore
 		logr.Warn("DoHTTPPost#httpBody: error ready response body")
-		//log.Printf("DoHTTPPost#httpBody: %#v: request: %#v", err, httpResponse.Body)
 		return
 	}
 	ch <- HTTPResponse{httpResponse.Status, httpBody}
