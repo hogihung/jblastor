@@ -48,19 +48,21 @@ func main() {
 		// For each URL call the DOHTTPPost function (concurrency)
 		// TODO: need to add some throttling.  Seems the speed of requests going to
 		//       the target endpoint is causing a lock up. (05/09/19)
-		go DoHTTPPost(file, ch)
+		//go DoHTTPPost(file, ch)
+		DoHTTPPost(file)
 	}
 
-	for range processedFiles {
-		// Want to use both of these but in a log file.
-		fmt.Println((<-ch).status) // example:  201 Created
-		//fmt.Println(string((<-ch).body))
-	}
+	// for range processedFiles {
+	// 	// Want to use both of these but in a log file.
+	// 	fmt.Println((<-ch).status) // example:  201 Created
+	// 	//fmt.Println(string((<-ch).body))
+	// }
 }
 
 // DoHTTPPost function takes a path to a JSON formatted file, extracts the JSON
 // data and then does a POST request to the targetted endpoint, concurrently.
-func DoHTTPPost(file string, ch chan<- HTTPResponse) {
+//func DoHTTPPost(file string, ch chan<- HTTPResponse) {
+func DoHTTPPost(file string) {
 	jsonFile, err := os.Open(file)
 	if err != nil {
 		// Change this to log error to file.
@@ -97,7 +99,8 @@ func DoHTTPPost(file string, ch chan<- HTTPResponse) {
 		logr.Warn("DoHTTPPost#httpBody: error ready response body")
 		return
 	}
-	ch <- HTTPResponse{httpResponse.Status, httpBody}
+	fmt.Println(HTTPResponse{httpResponse.Status, httpBody}) // need to adjust httpBody so it displays human readable text, not byte strings
+	// also, let's move the above to logr ?
 }
 
 func processFiles(f string) []string {
