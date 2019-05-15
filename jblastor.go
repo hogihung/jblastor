@@ -99,8 +99,13 @@ func DoHTTPPost(file string) {
 		logr.Warn("DoHTTPPost#httpBody: error ready response body")
 		return
 	}
-	fmt.Println(HTTPResponse{httpResponse.Status, httpBody}) // need to adjust httpBody so it displays human readable text, not byte strings
+	r := HTTPResponse{httpResponse.Status, httpBody}
+	fmt.Println("Response: ", r.status)
+	fmt.Println("Data: ", string(r.body))
+	//fmt.Println(HTTPResponse{httpResponse.Status, httpBody}) // need to adjust httpBody so it displays human readable text, not byte strings
+	//fmt.Println("Response: %v, Data: %v", HTTPResponse.status, HTTPResponse.body)
 	// also, let's move the above to logr ?
+	//s := string([]byte{65, 66, 67, 226, 130, 172})
 }
 
 func processFiles(f string) []string {
