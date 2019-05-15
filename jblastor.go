@@ -100,12 +100,8 @@ func DoHTTPPost(file string) {
 		return
 	}
 	r := HTTPResponse{httpResponse.Status, httpBody}
-	fmt.Println("Response: ", r.status)
-	fmt.Println("Data: ", string(r.body))
-	//fmt.Println(HTTPResponse{httpResponse.Status, httpBody}) // need to adjust httpBody so it displays human readable text, not byte strings
-	//fmt.Println("Response: %v, Data: %v", HTTPResponse.status, HTTPResponse.body)
-	// also, let's move the above to logr ?
-	//s := string([]byte{65, 66, 67, 226, 130, 172})
+	fmt.Printf("Status: %v | Data: %v \n", r.status, string(r.body))
+	// Look into converting above to use Logrus (log with fields)
 }
 
 func processFiles(f string) []string {
