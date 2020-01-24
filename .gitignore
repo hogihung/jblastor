@@ -2,3 +2,9 @@
 Scratchpad/
 tmp/
 JSON/
+.vscode/
+BUILDS/
+jblastor-darwin
+jblastor-linux
+jblastor-win
+logfile.txt
